@@ -11,6 +11,7 @@
         "laravel/jetstream": "^5.0",
         "laravel/sanctum": "^4.0",
         "laravel/tinker": "^2.9",
+        "maatwebsite/excel": "^1.1",
         "tightenco/ziggy": "^2.0"
     },
     "require-dev": {
@@ -26,7 +27,8 @@
         "psr-4": {
             "App\\": "app/",
             "Database\\Factories\\": "database/factories/",
-            "Database\\Seeders\\": "database/seeders/"
+            "Database\\Seeders\\": "database/seeders/",
+            "Maatwebsite\\Excel\\": "vendor/maatwebsite/excel/src/"
         }
     },
     "autoload-dev": {
