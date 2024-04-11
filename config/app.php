@@ -126,5 +126,4 @@ return [
    'aliases' => [
        'Excel' => Maatwebsite\Excel\Facades\Excel::class,
    ],
-
 ];
