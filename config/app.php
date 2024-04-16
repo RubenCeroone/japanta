@@ -123,7 +123,11 @@ return [
         'store' => env('APP_MAINTENANCE_STORE', 'database'),
     ],
 
-   'aliases' => [
-       'Excel' => Maatwebsite\Excel\Facades\Excel::class,
-   ],
+];
+
+// Agrega el arreglo de aliases fuera del arreglo principal de configuración
+return [
+    'aliases' => [
+        'Excel' => Maatwebsite\Excel\Facades\Excel::class,
+    ],
 ];

@@ -18,7 +18,7 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            top: 55%
+            top: 50%
             /* Otros estilos que desees aplicar */
         }
     </style>
