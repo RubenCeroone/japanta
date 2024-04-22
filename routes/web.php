@@ -9,6 +9,7 @@ use Inertia\Inertia;
  
 Route::get('/BotonExcel',[BotonExcelController::class,'invoke'])->name('botonexcel');
 Route::get('/exportar-excel', [BotonExcelController::class, 'exportarExcel'])->name('exportar_excel');
+Route::get('/exportar-excel2', [BotonExcelController::class, 'exportarExcel2'])->name('exportar_excel2');
 
 /*
 Route::get('/', function () {

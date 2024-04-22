@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
  
 class Japanta extends Model
 {
-    protected $table = 'japanta';
+    protected $table = 'japanta2';
     use HasFactory;
  
     protected $fillable = [

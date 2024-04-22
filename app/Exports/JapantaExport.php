@@ -9,6 +9,8 @@ use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithStyles;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 use PhpOffice\PhpSpreadsheet\Style\Fill;
+use PhpOffice\PhpSpreadsheet\Style\Alignment;
+use PhpOffice\PhpSpreadsheet\Style\Color;
 use PhpOffice\PhpSpreadsheet\Style\Border;
 use Carbon\Carbon;
 use PhpOffice\PhpSpreadsheet\Style\NumberFormat;
@@ -34,6 +36,11 @@ class JapantaExport implements FromCollection, WithStyles
     {
         return $this->japanta;
         return $this->japanta1;
+    }
+
+    public function formatNumber($number)
+    {
+        return number_format($number, 2); // Formatear a dos decimales
     }
  
     public function styles(Worksheet $sheet)
@@ -281,7 +288,7 @@ class JapantaExport implements FromCollection, WithStyles
     $restaSaldo = '=E32-F32';
 
     // Asignar la fórmula de resta a la celda G32
-    $sheet->setCellValue('G32', $restaSaldo1 . ' €');
+    $sheet->setCellValue('G32', $restaSaldo . ' €');
 
     // Aplicar el formato numérico a la celda G32
     $sheet->getStyle('G32')->getNumberFormat()->setFormatCode(NumberFormat::FORMAT_NUMBER_00 . '€');

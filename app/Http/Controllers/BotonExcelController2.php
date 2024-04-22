@@ -17,6 +17,6 @@ class BotonExcelController extends Controller
     public function exportarExcel()
     {
         $datos = Japanta2::all();
-        return Excel::download(new JapantaExport2($datos), 'Japanta.xlsx');
+        return Excel::download(new JapantaExport2($datos), 'Japanta2.xlsx');
     }
 }
