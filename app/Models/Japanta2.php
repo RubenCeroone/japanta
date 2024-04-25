@@ -11,12 +11,12 @@ class Japanta extends Model
     use HasFactory;
  
     protected $fillable = [
-        'fecha',
+        'fecha2',
         'nombre',
         'grupo',
         'saldoinicial',
-        'debe',
-        'haber',
+        'debe2',
+        'haber2',
         'saldofinal'
     ];
 }
