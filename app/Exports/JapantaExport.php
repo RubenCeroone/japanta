@@ -24,10 +24,6 @@ class JapantaExport implements FromCollection, WithStyles
     {
         $this->japanta = Japanta::all();
         $this->japanta->prepend(new Japanta());
-    }
-
-    public function __construct1()
-    {
         $this->japanta1 = Japanta1::all();
         $this->japanta1->prepend(new Japanta1());
     }
@@ -67,18 +63,18 @@ class JapantaExport implements FromCollection, WithStyles
 
         // Calcular la suma de los valores en las celdas E8 hasta E(endRow)
         $sumaDebe = '=SUM(E' . $startRow . ':E' . $endRow . ')';
-        $sheet->setCellValue('E' . ($endRow + 2), $sumaDebe . ' €');
-        $sheet->getStyle('E' . ($endRow + 2))->getNumberFormat()->setFormatCode(NumberFormat::FORMAT_NUMBER_00 . '€');
+        $sheet->setCellValue('E' . ($totalRow + 1), $sumaDebe . ' €');
+        $sheet->getStyle('E' . ($totalRow + 1))->getNumberFormat()->setFormatCode(NumberFormat::FORMAT_NUMBER_00 . '€');
 
         // Calcular la suma de los valores en las celdas F8 hasta F(endRow)
         $sumaHaber = '=SUM(F' . $startRow . ':F' . $endRow . ')';
-        $sheet->setCellValue('F' . ($endRow + 2), $sumaHaber . ' €');
-        $sheet->getStyle('F' . ($endRow + 2))->getNumberFormat()->setFormatCode(NumberFormat::FORMAT_NUMBER_00 . '€');
+        $sheet->setCellValue('F' . ($totalRow + 1), $sumaHaber . ' €');
+        $sheet->getStyle('F' . ($totalRow + 1))->getNumberFormat()->setFormatCode(NumberFormat::FORMAT_NUMBER_00 . '€');
 
-        // Calcular la resta de los resultados en las celdas E(endRow+1) y F(endRow+1)
-        $restaSaldo = '=E' . ($endRow + 2) . '-F' . ($endRow + 2);
-        $sheet->setCellValue('G' . ($endRow + 2), $restaSaldo . ' €');
-        $sheet->getStyle('G' . ($endRow + 2))->getNumberFormat()->setFormatCode(NumberFormat::FORMAT_NUMBER_00 . '€');
+        // Calcular la resta de los resultados en las celdas E(totalRow+1) y F(totalRow+1)
+        $restaSaldo = '=E' . ($totalRow + 1) . '-F' . ($totalRow + 1);
+        $sheet->setCellValue('G' . ($totalRow + 1), $restaSaldo . ' €');
+        $sheet->getStyle('G' . ($totalRow + 1))->getNumberFormat()->setFormatCode(NumberFormat::FORMAT_NUMBER_00 . '€');
 
         return $totalRow; // Devuelve la fila del total
     }
@@ -162,7 +158,7 @@ class JapantaExport implements FromCollection, WithStyles
 
         // Aplicar el formato numérico a la celda G$totalRowSecond
         $sheet->getStyle('G' . $endRowSecond)->getNumberFormat()->setFormatCode(NumberFormat::FORMAT_NUMBER_00 . '€');
-    }    
+    }
  
     public function styles(Worksheet $sheet)
     {
