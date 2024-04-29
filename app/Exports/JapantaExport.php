@@ -278,9 +278,9 @@ class JapantaExport implements FromCollection, WithStyles
     }
         
         // Llamar a insertTotal para la primera sección de datos
-        insertTotal($sheet, $startRow, $endRow, $totalDebe, $totalHaber);
+        $this->insertTotal($sheet, $startRow, $endRow, $totalDebe, $totalHaber);
 
         // Llamar a insertTotalSecond para la segunda sección de datos
-        insertTotalSecond($sheet, $startRow, $endRow, $totalDebe, $totalHaber);
+        $this->insertTotalSecond($sheet, $startRow, $endRow, $totalDebe, $totalHaber);
     }
 }
