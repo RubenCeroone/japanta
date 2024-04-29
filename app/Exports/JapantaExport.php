@@ -38,6 +38,74 @@ class JapantaExport implements FromCollection, WithStyles
         return number_format($number, 2); // Formatear a dos decimales
     }
 
+    public function clearRow1(Worksheet $sheet)
+    {
+        // Borra los datos de la línea 1 desde la columna C hasta la columna V
+        for ($column = 'B'; $column <= 'H'; $column++) {
+            $sheet->setCellValue($column . '1', '');
+        }
+    }
+
+    public function clearRow2(Worksheet $sheet)
+    {
+        // Borra los datos desde la celda F2 hasta la celda H4
+        for ($row = 2; $row <= 6; $row++) {
+            for ($column = 'F'; $column <= 'H'; $column++) {
+                $sheet->setCellValue($column . $row, '');
+            }
+        }
+    }
+
+    public function clearRow3(Worksheet $sheet)
+    {
+        // Borra los datos desde la celda H1 hasta la celda H2000
+        for ($row = 1; $row <= 2000; $row++) {
+            $sheet->setCellValue('H' . $row, '');
+        }
+    }
+
+    public function clearRow4(Worksheet $sheet)
+    {
+        // Borra los datos desde la celda C2 hasta la celda D6
+        for ($row = 2; $row <= 6; $row++) {
+            for ($column = 'C'; $column <= 'D'; $column++) {
+                $sheet->setCellValue($column . $row, '');
+            }
+        }
+    }
+
+    public function addBottomBorder(Worksheet $sheet, $startRow, $endRow, $startColumn, $endColumn)
+    {
+        // Asumimos que la última fila con datos es la inicial
+        $lastRowWithData = $startRow; // Comenzamos desde la fila inicial
+
+        // Iterar hacia adelante desde la fila inicial hasta el fin del rango deseado
+        for ($row = $startRow; $row <= $endRow; $row++) {
+            // Verificar si al menos una celda en el rango tiene contenido
+            $isEmpty = true; // Asignamos verdadero inicialmente
+            for ($col = $startColumn; ord($col) <= ord($endColumn); $col++) {
+                if (!empty(trim($sheet->getCell($col . $row)->getValue()))) {
+                    $isEmpty = false; // Encontramos datos, marcar como no vacío
+                    break; // Salir del bucle interno si encuentra datos
+                }
+            }
+            if (!$isEmpty) {
+                $lastRowWithData = $row; // Actualizar la última fila con datos
+            }
+        }
+
+        // Agregar "Total:" en negrita a la izquierda de una fila debajo del último dato
+        $totalRow = $lastRowWithData + 1;
+        // Verificar si la fila total está dentro del rango, ajustar si es necesario
+        if ($totalRow > $endRow) {
+            $totalRow = $endRow + 1;
+        }
+        $totalColumn = 'B'; // Columna B
+        $sheet->getStyle($totalColumn . $totalRow)->getFont()->setBold(true);
+        $sheet->getStyle($totalColumn . $totalRow)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_LEFT);
+        $sheet->setCellValue($totalColumn . $totalRow, "Total:");
+    }
+/*
     public function insertTotal($sheet, $startRow, $endRow, $totalDebe, $totalHaber)
     {
         // Calcular el saldo final
@@ -159,9 +227,18 @@ class JapantaExport implements FromCollection, WithStyles
         // Aplicar el formato numérico a la celda G$totalRowSecond
         $sheet->getStyle('G' . $endRowSecond)->getNumberFormat()->setFormatCode(NumberFormat::FORMAT_NUMBER_00 . '€');
     }
- 
+ */
     public function styles(Worksheet $sheet)
     {
+        // Llamar a la función clearRow1
+        $this->clearRow1($sheet);
+        // Llamar a la función clearRow2
+        $this->clearRow2($sheet);
+        // Llamar a la función clearRow3
+        $this->clearRow3($sheet);
+        // Llamar a la función clearRow4
+        $this->clearRow4($sheet);
+
         // Establecer el ancho de las columnas
         $sheet->getColumnDimension('A')->setWidth(11.14);
         $sheet->getColumnDimension('B')->setWidth(59.00);
@@ -242,7 +319,7 @@ class JapantaExport implements FromCollection, WithStyles
 
         // Insertar datos de Japanta
         $startRow = 8; // Fila donde empiezan los datos
-        $endRow = 2000; // Última fila donde se insertarán datos
+        $endRow = 50; // Última fila donde se insertarán datos
 
         $row = $startRow;
         $totalDebe = 0;
@@ -278,9 +355,9 @@ class JapantaExport implements FromCollection, WithStyles
     }
         
         // Llamar a insertTotal para la primera sección de datos
-        $this->insertTotal($sheet, $startRow, $endRow, $totalDebe, $totalHaber);
+        //$this->insertTotal($sheet, $startRow, $endRow, $totalDebe, $totalHaber);
 
         // Llamar a insertTotalSecond para la segunda sección de datos
-        $this->insertTotalSecond($sheet, $startRow, $endRow, $totalDebe, $totalHaber);
+        //$this->insertTotalSecond($sheet, $startRow, $endRow, $totalDebe, $totalHaber);
     }
 }
