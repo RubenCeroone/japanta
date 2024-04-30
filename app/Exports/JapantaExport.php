@@ -72,9 +72,13 @@ class JapantaExport implements FromCollection, WithStyles
                 $sheet->setCellValue($column . $row, '');
             }
         }
+        // Borra los datos desde la celda E7 hasta la celda G7
+        for ($column = 'E'; $column <= 'G'; $column++) {
+            $sheet->setCellValue($column . '7', '');
+        }
     }
 
-    public function addBottomBorder(Worksheet $sheet, $startRow, $endRow, $startColumn, $endColumn)
+    public function addTotal(Worksheet $sheet, $startRow, $endRow, $startColumn, $endColumn)
     {
         // Asumimos que la última fila con datos es la inicial
         $lastRowWithData = $startRow; // Comenzamos desde la fila inicial
@@ -95,139 +99,137 @@ class JapantaExport implements FromCollection, WithStyles
         }
 
         // Agregar "Total:" en negrita a la izquierda de una fila debajo del último dato
-        $totalRow = $lastRowWithData + 1;
+        $totalRow = $lastRowWithData + 2;
         // Verificar si la fila total está dentro del rango, ajustar si es necesario
         if ($totalRow > $endRow) {
-            $totalRow = $endRow + 1;
+            $totalRow = $endRow + 2;
         }
         $totalColumn = 'B'; // Columna B
         $sheet->getStyle($totalColumn . $totalRow)->getFont()->setBold(true);
         $sheet->getStyle($totalColumn . $totalRow)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_LEFT);
         $sheet->setCellValue($totalColumn . $totalRow, "Total:");
-    }
-/*
-    public function insertTotal($sheet, $startRow, $endRow, $totalDebe, $totalHaber)
-    {
-        // Calcular el saldo final
-        $saldoFinal = $totalDebe - $totalHaber;
 
-        // Calcular la fila del total (2 filas debajo del endRow)
-        $totalRow = $endRow + 2;
+        // Definir variables dentro del bucle para reiniciarlas en cada iteración
+        $sumaColumnaDebe = 0;
+        $sumaColumnaHaber = 0;
 
-        // Asignar los valores de total y saldo a las celdas correspondientes
-        $sheet->setCellValue('B' . $totalRow, 'Total:');
-        $sheet->setCellValue('E' . $totalRow, $totalDebe . ' €');
-        $sheet->setCellValue('F' . $totalRow, $totalHaber . ' €');
-        $sheet->setCellValue('G' . $totalRow, $saldoFinal . ' €');
-
-        // Aplicar estilos al texto en la celda del total
-        $sheet->getStyle('B' . $totalRow)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_LEFT);
-        $sheet->getStyle('B' . $totalRow)->getFont()->setSize(11);
-
-        // Aplicar el formato numérico a las celdas de total
-        $sheet->getStyle('E' . $totalRow)->getNumberFormat()->setFormatCode(NumberFormat::FORMAT_NUMBER_00 . '€');
-        $sheet->getStyle('F' . $totalRow)->getNumberFormat()->setFormatCode(NumberFormat::FORMAT_NUMBER_00 . '€');
-        $sheet->getStyle('G' . $totalRow)->getNumberFormat()->setFormatCode(NumberFormat::FORMAT_NUMBER_00 . '€');
-
-        // Calcular la suma de los valores en las celdas E8 hasta E(endRow)
-        $sumaDebe = '=SUM(E' . $startRow . ':E' . $endRow . ')';
-        $sheet->setCellValue('E' . ($totalRow + 1), $sumaDebe . ' €');
-        $sheet->getStyle('E' . ($totalRow + 1))->getNumberFormat()->setFormatCode(NumberFormat::FORMAT_NUMBER_00 . '€');
-
-        // Calcular la suma de los valores en las celdas F8 hasta F(endRow)
-        $sumaHaber = '=SUM(F' . $startRow . ':F' . $endRow . ')';
-        $sheet->setCellValue('F' . ($totalRow + 1), $sumaHaber . ' €');
-        $sheet->getStyle('F' . ($totalRow + 1))->getNumberFormat()->setFormatCode(NumberFormat::FORMAT_NUMBER_00 . '€');
-
-        // Calcular la resta de los resultados en las celdas E(totalRow+1) y F(totalRow+1)
-        $restaSaldo = '=E' . ($totalRow + 1) . '-F' . ($totalRow + 1);
-        $sheet->setCellValue('G' . ($totalRow + 1), $restaSaldo . ' €');
-        $sheet->getStyle('G' . ($totalRow + 1))->getNumberFormat()->setFormatCode(NumberFormat::FORMAT_NUMBER_00 . '€');
-
-        return $totalRow; // Devuelve la fila del total
-    }
-
-    public function insertTotalSecond($sheet, $startRow, $endRow, $totalDebe, $totalHaber)
-    {
-        // Obtener el número de fila donde termina la inserción de datos en la función anterior
-        $previousEndRow = $this->insertTotal($sheet, $startRow, $endRow, $totalDebe, $totalHaber);
-
-        // Calcular el número de fila de inicio para la nueva inserción
-        $startRowSecond = $previousEndRow + 2;
-
-        // Combinar celdas A y B para la nueva sección
-        $sheet->mergeCells('A' . $startRowSecond . ':B' . $startRowSecond);
-
-        // Aplica estilos al texto en la celda A$startRowSecond
-        $sheet->getStyle('A' . $startRowSecond)->getFont()->setBold(true)->setSize(11);
-        $sheet->getStyle('A' . $startRowSecond)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_LEFT);
-
-        // Asignar el texto a la celda combinada
-        $sheet->setCellValue('A' . $startRowSecond, '4720000010, Hp, Iva Soportado 10%');
-
-        // Establece el color de fondo de las celdas A$startRowSecond:G$startRowSecond a negro
-        $sheet->getStyle('A' . $startRowSecond . ':G' . $startRowSecond)->getFill()->setFillType(Fill::FILL_SOLID)->getStartColor()->setARGB('000000');
-
-        // Aplica estilos al texto de las celdas A$startRowSecond:G$startRowSecond
-        $sheet->getStyle('A' . $startRowSecond . ':G' . $startRowSecond)->getFont()->setSize(11);
-        $sheet->getStyle('A' . $startRowSecond . ':G' . $startRowSecond)->getFont()->setBold(true);
-        $sheet->getStyle('A' . $startRowSecond . ':G' . $startRowSecond)->getFont()->setColor(new Color(Color::COLOR_WHITE));
-        $sheet->getStyle('A' . $startRowSecond . ':G' . $startRowSecond)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_LEFT);
-
-        // Establece el texto en las celdas A$startRowSecond:G$startRowSecond
-        $sheet->setCellValue('A' . $startRowSecond, 'Fecha');
-        $sheet->setCellValue('B' . $startRowSecond, 'Concepto');
-        $sheet->setCellValue('C' . $startRowSecond, 'Documento');
-        $sheet->setCellValue('D' . $startRowSecond, 'Tags');
-        $sheet->setCellValue('E' . $startRowSecond, 'Debe');
-        $sheet->setCellValue('F' . $startRowSecond, 'Haber');
-        $sheet->setCellValue('G' . $startRowSecond, 'Saldo');
-
-        // Insertar datos de Japanta1
-        $totalDebeSecond = 0;
-        $totalHaberSecond = 0;
-        $endRowSecond = $endRow + $startRowSecond; // Se calcula el número total de filas
-
-        for ($row = $startRowSecond + 1; $row <= $endRowSecond; $row++) {
-            // Agregar aquí tu lógica para insertar datos de Japanta1
-            // Asegúrate de actualizar $totalDebeSecond y $totalHaberSecond en cada iteración
+        // Calcular las sumas de la columna "Debe" y "Haber"
+        foreach ($this->collection() as $japanta) {
+            $sumaColumnaDebe += $japanta->debe;
+            $sumaColumnaHaber += $japanta->haber;
         }
 
-        // Aplica estilos al texto en la celda B$totalRowSecond
-        $sheet->getStyle('B' . $endRowSecond)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_LEFT);
-        $sheet->getStyle('B' . $endRowSecond)->getFont()->setSize(11);
+        // Calcular el saldo
+        $saldo = $sumaColumnaDebe - $sumaColumnaHaber;
 
-        // Escribe el texto en la celda B$totalRowSecond
-        $sheet->setCellValue('B' . $endRowSecond, 'Total');
+        // Insertar dos filas debajo de la fila "Total"
+        $sheet->insertNewRowBefore($totalRow + 1, 2);
 
-        // Calcular la suma de los valores en las celdas E$startRowSecond hasta E$endRowSecond
-        $sumaDebeSecond = '=SUM(E' . $startRowSecond . ':E' . $endRowSecond . ')';
+        // Escribir los valores en las nuevas filas
+        $sheet->setCellValue("E{$totalRow}", $sumaColumnaDebe . ' €');
+        $sheet->setCellValue("F{$totalRow}", $sumaColumnaHaber . ' €');
+        $sheet->setCellValue("G{$totalRow}", $saldo . ' €');
 
-        // Asignar la fórmula de suma a la celda E$totalRowSecond
-        $sheet->setCellValue('E' . $endRowSecond, $sumaDebeSecond . ' €');
-
-        // Aplicar el formato numérico a la celda E$totalRowSecond
-        $sheet->getStyle('E' . $endRowSecond)->getNumberFormat()->setFormatCode(NumberFormat::FORMAT_NUMBER_00 . '€');
-
-        // Calcular la suma de los valores en las celdas F$startRowSecond hasta F$endRowSecond
-        $sumaHaberSecond = '=SUM(F' . $startRowSecond . ':F' . $endRowSecond . ')';
-
-        // Asignar la fórmula de suma a la celda F$totalRowSecond
-        $sheet->setCellValue('F' . $endRowSecond, $sumaHaberSecond . ' €');
-
-        // Aplicar el formato numérico a la celda F$totalRowSecond
-        $sheet->getStyle('F' . $endRowSecond)->getNumberFormat()->setFormatCode(NumberFormat::FORMAT_NUMBER_00 . '€');
-
-        // Calcular la resta de los resultados en las celdas E$totalRowSecond y F$totalRowSecond
-        $restaSaldoSecond = '=E' . $endRowSecond . '-F' . $endRowSecond;
-
-        // Asignar la fórmula de resta a la celda G$totalRowSecond
-        $sheet->setCellValue('G' . $endRowSecond, $restaSaldoSecond . ' €');
-
-        // Aplicar el formato numérico a la celda G$totalRowSecond
-        $sheet->getStyle('G' . $endRowSecond)->getNumberFormat()->setFormatCode(NumberFormat::FORMAT_NUMBER_00 . '€');
+        // Aplicar alineación a la izquierda en las celdas
+        $sheet->getStyle("E{$totalRow}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_LEFT);
+        $sheet->getStyle("F{$totalRow}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_LEFT);
+        $sheet->getStyle("G{$totalRow}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_LEFT);
     }
- */
+
+    public function addIVA10(Worksheet $sheet, $startRow, $endRow, $startColumn, $endColumn)
+    {
+        // Asumimos que la última fila con datos es la inicial
+        $lastRowWithData = $startRow; // Comenzamos desde la fila inicial
+
+        // Iterar hacia adelante desde la fila inicial hasta el fin del rango deseado
+        for ($row = $startRow; $row <= $endRow; $row++) {
+            // Verificar si al menos una celda en el rango tiene contenido
+            $isEmpty = true; // Asignamos verdadero inicialmente
+            for ($col = $startColumn; ord($col) <= ord($endColumn); $col++) {
+                if (!empty(trim($sheet->getCell($col . $row)->getValue()))) {
+                    $isEmpty = false; // Encontramos datos, marcar como no vacío
+                    break; // Salir del bucle interno si encuentra datos
+                }
+            }
+            if (!$isEmpty) {
+                $lastRowWithData = $row; // Actualizar la última fila con datos
+            }
+        }
+
+        // Agregar "4720000010, Hp, IVA Soportado 10%" en negrita a la izquierda de una fila debajo del último dato
+        $totalRow = $lastRowWithData + 2;
+        // Verificar si la fila total está dentro del rango, ajustar si es necesario
+        if ($totalRow > $endRow) {
+            $totalRow = $endRow + 2;
+        }
+        $totalColumn = 'A'; // Columna A
+
+        // Combinar celdas A y B
+        $sheet->mergeCells($totalColumn . $totalRow . ':' . 'B' . $totalRow);
+
+        $sheet->getStyle($totalColumn . $totalRow)->getFont()->setBold(true);
+        $sheet->getStyle($totalColumn . $totalRow)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_LEFT);
+        $sheet->setCellValue($totalColumn . $totalRow, "4720000010, Hp, IVA Soportado 10%");
+
+        // Agregar "Fecha" en negrita a la izquierda de una fila debajo del último dato
+        $totalRow = $lastRowWithData + 3;
+        // Verificar si la fila total está dentro del rango, ajustar si es necesario
+        if ($totalRow > $endRow) {
+            $totalRow = $endRow + 3;
+        }
+
+        // Iterar sobre las columnas desde la A hasta la G
+        for ($column = 'A'; $column <= 'G'; $column++) {
+            // Obtener el estilo de la celda actual
+            $style = $sheet->getStyle($column . $totalRow);
+
+            // Aplicar el estilo de fuente negrita y color blanco
+            $style->getFont()->setBold(true)->setColor(new \PhpOffice\PhpSpreadsheet\Style\Color(\PhpOffice\PhpSpreadsheet\Style\Color::COLOR_WHITE));
+
+            // Aplicar el color de fondo negro
+            $style->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID);
+            $style->getFill()->getStartColor()->setRGB('000000');
+
+            // Aplicar la alineación horizontal a la izquierda
+            $style->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_LEFT);
+        }
+
+        // Obtener la celda A en la fila específica
+        $cellA = 'A' . $totalRow;
+        // Asignar el texto "Fecha" a la celda A
+        $sheet->setCellValue($cellA, "Fecha");
+
+        // Obtener la celda B en la fila específica
+        $cellB = 'B' . $totalRow;
+        // Asignar el texto "Concepto" a la celda B
+        $sheet->setCellValue($cellB, "Concepto");
+
+        // Obtener la celda C en la fila específica
+        $cellC = 'C' . $totalRow;
+        // Asignar el texto "Documento" a la celda C
+        $sheet->setCellValue($cellC, "Documento");
+
+        // Obtener la celda D en la fila específica
+        $cellD = 'D' . $totalRow;
+        // Asignar el texto "Tags" a la celda D
+        $sheet->setCellValue($cellD, "Tags");
+
+        // Obtener la celda E en la fila específica
+        $cellE = 'E' . $totalRow;
+        // Asignar el texto "Debe" a la celda E
+        $sheet->setCellValue($cellE, "Debe");
+
+        // Obtener la celda F en la fila específica
+        $cellF = 'F' . $totalRow;
+        // Asignar el texto "Haber" a la celda F
+        $sheet->setCellValue($cellF, "Haber");
+
+        // Obtener la celda G en la fila específica
+        $cellG = 'G' . $totalRow;
+        // Asignar el texto "Saldo" a la celda G
+        $sheet->setCellValue($cellG, "Saldo");
+    }
+
     public function styles(Worksheet $sheet)
     {
         // Llamar a la función clearRow1
@@ -322,42 +324,46 @@ class JapantaExport implements FromCollection, WithStyles
         $endRow = 50; // Última fila donde se insertarán datos
 
         $row = $startRow;
+
+        // Definir variables fuera del bucle para no reiniciarlas en cada iteración
         $totalDebe = 0;
         $totalHaber = 0;
+
         foreach ($this->collection() as $japanta) {
             if ($row > $endRow) {
                 break; // Salir del bucle si alcanzamos la última fila
+            }
+
+            $sheet->setCellValue('A' . $row, $japanta->fecha);
+            $sheet->setCellValue('B' . $row, $japanta->concepto);
+            $sheet->setCellValue('C' . $row, $japanta->documento);
+            $sheet->setCellValue('D' . $row, $japanta->tags);
+
+            // Formatear números en las columnas debe, haber y saldo
+            $sheet->setCellValue('E' . $row, $japanta->debe != 0 ? number_format($japanta->debe, 2) . ' €' : '- €');
+            $sheet->setCellValue('F' . $row, $japanta->haber != 0 ? number_format($japanta->haber, 2) . ' €' : '- €');
+
+            // Calcular el saldo sumando el total de debe y restando el total de haber
+            $totalDebe += $japanta->debe;
+            $totalHaber += $japanta->haber;
+            $saldo = $totalDebe - $totalHaber;
+            $sheet->setCellValue('G' . $row, $this->formatNumber($saldo) . " €");
+
+            // Aplicar estilos a las celdas de las columnas debe, haber y saldo
+            $sheet->getStyle('E' . $row)->getNumberFormat()->setFormatCode(NumberFormat::FORMAT_NUMBER_00 . '€');
+            $sheet->getStyle('F' . $row)->getNumberFormat()->setFormatCode(NumberFormat::FORMAT_NUMBER_00 . '€');
+            $sheet->getStyle('G' . $row)->getNumberFormat()->setFormatCode(NumberFormat::FORMAT_NUMBER_00 . '€');
+            $sheet->getStyle('E' . $row)->getNumberFormat()->setFormatCode('#,##0.00');
+            $sheet->getStyle('F' . $row)->getNumberFormat()->setFormatCode('#,##0.00');
+            $sheet->getStyle('G' . $row)->getNumberFormat()->setFormatCode('#,##0.00');
+
+            $row++;
         }
-        $sheet->setCellValue('A' . $row, $japanta->fecha);
-        $sheet->setCellValue('B' . $row, $japanta->concepto);
-        $sheet->setCellValue('C' . $row, $japanta->documento);
-        $sheet->setCellValue('D' . $row, $japanta->tags);
-
-        // Formatear números en las columnas debe, haber y saldo
-        $sheet->setCellValue('E' . $row, $japanta->debe != 0 ? number_format($japanta->debe, 2) . ' €' : '- €');
-        $sheet->setCellValue('F' . $row, $japanta->haber != 0 ? number_format($japanta->haber, 2) . ' €' : '- €');
-
-        // Calcular el saldo sumando el total de debe y restando el total de haber
-        $totalDebe += $japanta->debe;
-        $totalHaber += $japanta->haber;
-        $saldo = $totalDebe - $totalHaber;
-        $sheet->setCellValue('G' . $row, $this->formatNumber($saldo) . " €");
-
-        // Aplicar estilos a las celdas de las columnas debe, haber y saldo
-        $sheet->getStyle('E' . $row)->getNumberFormat()->setFormatCode(NumberFormat::FORMAT_NUMBER_00 . '€');
-        $sheet->getStyle('F' . $row)->getNumberFormat()->setFormatCode(NumberFormat::FORMAT_NUMBER_00 . '€');
-        $sheet->getStyle('G' . $row)->getNumberFormat()->setFormatCode(NumberFormat::FORMAT_NUMBER_00 . '€');
-        $sheet->getStyle('E' . $row)->getNumberFormat()->setFormatCode('#,##0.00');
-        $sheet->getStyle('F' . $row)->getNumberFormat()->setFormatCode('#,##0.00');
-        $sheet->getStyle('G' . $row)->getNumberFormat()->setFormatCode('#,##0.00');
-
-        $row++;
-    }
         
-        // Llamar a insertTotal para la primera sección de datos
-        //$this->insertTotal($sheet, $startRow, $endRow, $totalDebe, $totalHaber);
+        // Llamar a addTotal para la primera sección de datos
+        $this->addTotal($sheet, $startRow, $endRow, 'B', 'G');
 
-        // Llamar a insertTotalSecond para la segunda sección de datos
-        //$this->insertTotalSecond($sheet, $startRow, $endRow, $totalDebe, $totalHaber);
+        // Llamar a addIVA10 para la primera sección de datos
+        $this->addIVA10($sheet, $startRow, $endRow, 'A', 'G');
     }
 }
