@@ -76,6 +76,10 @@ class JapantaExport implements FromCollection, WithStyles
         for ($column = 'E'; $column <= 'G'; $column++) {
             $sheet->setCellValue($column . '7', '');
         }
+
+        // Borra los datos en las celdas A5 y B5
+        $sheet->setCellValue('A5', '');
+        $sheet->setCellValue('B5', '');
     }
 
     public function addTotal(Worksheet $sheet, $startRow, $endRow, $startColumn, $endColumn)
@@ -230,6 +234,141 @@ class JapantaExport implements FromCollection, WithStyles
         $sheet->setCellValue($cellG, "Saldo");
     }
 
+    public function insertJapantaData($sheet, $collection, $startRow, $endRow)
+    {
+        $row = $startRow;
+
+        // Definir variables fuera del bucle para no reiniciarlas en cada iteración
+        $totalDebe = 0;
+        $totalHaber = 0;
+
+        foreach ($collection as $japanta) {
+            if ($row > $endRow) {
+                break; // Salir del bucle si alcanzamos la última fila
+            }
+
+            $sheet->setCellValue('A' . $row, $japanta->fecha);
+            $sheet->setCellValue('B' . $row, $japanta->concepto);
+            $sheet->setCellValue('C' . $row, $japanta->documento);
+            $sheet->setCellValue('D' . $row, $japanta->tags);
+
+            // Formatear números en las columnas debe, haber y saldo
+            $sheet->setCellValue('E' . $row, $japanta->debe != 0 ? number_format($japanta->debe, 2) . ' €' : '- €');
+            $sheet->setCellValue('F' . $row, $japanta->haber != 0 ? number_format($japanta->haber, 2) . ' €' : '- €');
+
+            // Calcular el saldo sumando el total de debe y restando el total de haber
+            $totalDebe += $japanta->debe;
+            $totalHaber += $japanta->haber;
+            $saldo = $totalDebe - $totalHaber;
+            $sheet->setCellValue('G' . $row, $this->formatNumber($saldo) . " €");
+
+            // Aplicar estilos a las celdas de las columnas debe, haber y saldo
+            $sheet->getStyle('E' . $row)->getNumberFormat()->setFormatCode(NumberFormat::FORMAT_NUMBER_00 . '€');
+            $sheet->getStyle('F' . $row)->getNumberFormat()->setFormatCode(NumberFormat::FORMAT_NUMBER_00 . '€');
+            $sheet->getStyle('G' . $row)->getNumberFormat()->setFormatCode(NumberFormat::FORMAT_NUMBER_00 . '€');
+            $sheet->getStyle('E' . $row)->getNumberFormat()->setFormatCode('#,##0.00');
+            $sheet->getStyle('F' . $row)->getNumberFormat()->setFormatCode('#,##0.00');
+            $sheet->getStyle('G' . $row)->getNumberFormat()->setFormatCode('#,##0.00');
+
+            $row++;
+        }
+
+        return $row; // Devolver la fila donde se detuvo la inserción de datos
+    }
+
+    public function handleJapantaData($sheet)
+    {
+        $startRow = 8;
+        $endRow = 50;
+
+        // Insertar datos de Japanta
+        $row = $this->insertJapantaData($sheet, $this->collection(), $startRow, $endRow);
+
+        // Llamar a addTotal para la primera sección de datos
+        $this->addTotal($sheet, $startRow, $endRow, 'B', 'G');
+
+        // Llamar a addIVA10 para la primera sección de datos
+        $this->addIVA10($sheet, $startRow, $endRow, 'A', 'G');
+
+        // Determinar la fila donde terminan addTotal y addIVA10
+        $lastRowWithData = $this->getLastRowWithData($sheet, $startRow, $endRow);
+
+        // Insertar datos de Japanta1 justo después de la fila donde terminó addIVA10
+        $startRowJapanta1 = $lastRowWithData + 1; // Ajustar según sea necesario
+        $endRowJapanta1 = $startRowJapanta1 + 50; // Ajustar según sea necesario
+
+        $this->insertJapanta1Data($sheet, $startRowJapanta1, $endRowJapanta1);
+    }
+
+    public function insertJapanta1Data($sheet, $startRow, $endRow)
+    {
+        $row = $startRow;
+
+        // Definir variables fuera del bucle para no reiniciarlas en cada iteración
+        $totalDebe1 = 0;
+        $totalHaber1 = 0;
+
+        foreach ($this->collectionJapanta1() as $japanta1) {
+            if ($row > $endRow) {
+                break; // Salir del bucle si alcanzamos la última fila
+            }
+
+            $sheet->setCellValue('A' . $row, $japanta1->fecha1);
+            $sheet->setCellValue('B' . $row, $japanta1->concepto1);
+            $sheet->setCellValue('C' . $row, $japanta1->documento1);
+            $sheet->setCellValue('D' . $row, $japanta1->tags1);
+
+            // Formatear números en las columnas debe, haber y saldo
+            $sheet->setCellValue('E' . $row, $japanta1->debe1 != 0 ? number_format($japanta1->debe1, 2) . ' €' : '- €');
+            $sheet->setCellValue('F' . $row, $japanta1->haber1 != 0 ? number_format($japanta1->haber1, 2) . ' €' : '- €');
+
+            // Calcular el saldo sumando el total de debe y restando el total de haber
+            $totalDebe1 += $japanta1->debe1;
+            $totalHaber1 += $japanta1->haber1;
+            $saldo1 = $totalDebe1 - $totalHaber1;
+            $sheet->setCellValue('G' . $row, $this->formatNumber($saldo1) . " €");
+
+            // Aplicar estilos a las celdas de las columnas debe, haber y saldo
+            $sheet->getStyle('C' . $row)->getAlignment()->setWrapText(true);
+            $sheet->getRowDimension($row)->setRowHeight(-1);
+            $sheet->getStyle('E' . $row)->getNumberFormat()->setFormatCode(NumberFormat::FORMAT_NUMBER_00 . '€');
+            $sheet->getStyle('F' . $row)->getNumberFormat()->setFormatCode(NumberFormat::FORMAT_NUMBER_00 . '€');
+            $sheet->getStyle('G' . $row)->getNumberFormat()->setFormatCode(NumberFormat::FORMAT_NUMBER_00 . '€');
+            $sheet->getStyle('E' . $row)->getNumberFormat()->setFormatCode('#,##0.00');
+            $sheet->getStyle('F' . $row)->getNumberFormat()->setFormatCode('#,##0.00');
+            $sheet->getStyle('G' . $row)->getNumberFormat()->setFormatCode('#,##0.00');
+
+            $row++;
+        }
+
+        return $row; // Devolver la fila donde se detuvo la inserción de datos
+    }
+
+    public function getLastRowWithData($sheet, $startRow, $endRow)
+    {
+        $lastRowWithData = $startRow;
+
+        for ($row = $startRow; $row <= $endRow; $row++) {
+            $isEmpty = true;
+            for ($col = 'A'; $col <= 'G'; $col++) {
+                if (!empty(trim($sheet->getCell($col . $row)->getValue()))) {
+                    $isEmpty = false;
+                    break;
+                }
+            }
+            if (!$isEmpty) {
+                $lastRowWithData = $row;
+            }
+        }
+
+        return $lastRowWithData;
+    }
+
+    public function collectionJapanta1(): Collection
+    {
+        return $this->japanta1;
+    }
+
     public function styles(Worksheet $sheet)
     {
         // Llamar a la función clearRow1
@@ -359,11 +498,7 @@ class JapantaExport implements FromCollection, WithStyles
 
             $row++;
         }
-        
-        // Llamar a addTotal para la primera sección de datos
-        $this->addTotal($sheet, $startRow, $endRow, 'B', 'G');
 
-        // Llamar a addIVA10 para la primera sección de datos
-        $this->addIVA10($sheet, $startRow, $endRow, 'A', 'G');
+        $this->handleJapantaData($sheet);
     }
 }
